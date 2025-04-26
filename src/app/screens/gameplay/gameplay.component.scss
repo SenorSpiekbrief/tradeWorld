@@ -1,0 +1,45 @@
+.game-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+  
+  .top-toolbar {
+    display: flex;
+    justify-content: space-between;
+    background: #3e2723;
+    color: white;
+    padding: 10px;
+  }
+  
+  .time-controls button {
+    margin-left: 5px;
+    color: white;
+  }
+  
+  .menu-controls {
+    display: flex;
+    align-items: center;
+  }
+  
+  mat-icon {
+    cursor: pointer;
+    margin-right: 10px;
+  }
+  
+  .game-world {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('/parchmentTile.gif');
+    background-repeat: repeat;
+  }
+  
+  .bottom-hud {
+    background: #5d4037;
+    color: white;
+    padding: 10px;
+    text-align: center;
+  }
+  

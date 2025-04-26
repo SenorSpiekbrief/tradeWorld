@@ -1,0 +1,38 @@
+<h2>Company Overview</h2>
+
+<table mat-table [dataSource]="companies" class="mat-elevation-z8">
+  
+  <!-- Name Column -->
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef> Name </th>
+    <td mat-cell *matCellDef="let company"> {{ company.name }} </td>
+  </ng-container>
+
+  <!-- Industry Column -->
+  <ng-container matColumnDef="industry">
+    <th mat-header-cell *matHeaderCellDef> Industry </th>
+    <td mat-cell *matCellDef="let company"> {{ company.industry }} </td>
+  </ng-container>
+
+  <!-- Value Column -->
+  <ng-container matColumnDef="value">
+    <th mat-header-cell *matHeaderCellDef> Value </th>
+    <td mat-cell *matCellDef="let company"> ${{ company.value | number }} </td>
+  </ng-container>
+
+  <!-- Actions Column -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef> Actions </th>
+    <td mat-cell *matCellDef="let company">
+      <button mat-button color="primary" (click)="startTradeMission(company)">Trade</button>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="['name', 'industry', 'value', 'actions']"></tr>
+  <tr mat-row *matRowDef="let row; columns: ['name', 'industry', 'value', 'actions'];"></tr>
+</table>
+
+<div class="dialog-actions">
+  <button mat-button color="accent" (click)="createCompany()">Create New Company</button>
+  <button mat-button color="warn" (click)="close()">Close</button>
+</div>

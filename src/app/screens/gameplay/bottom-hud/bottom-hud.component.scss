@@ -1,0 +1,133 @@
+.hud-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hud-border {
+    height: 17px;
+    background-image: url('/horizontalBar.gif');
+    background-repeat: repeat-x;
+    background-size: auto 100%;
+    image-rendering: pixelated;
+  }
+  .bottom-hud {
+    display: flex;
+    background: #5d4037;
+    color: white;
+    padding: 10px;
+    justify-content: space-between;
+  }
+  .minimap {
+    position: relative;
+    width: 150px;
+    height: 210px; // 150 + ~60
+    background: black;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    overflow: visible;
+  }
+  
+  .minimap-canvas {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .map-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    height: 60px;
+    padding: 4px;
+  }
+  
+  .map-control-btn {
+    width: 40px;
+    height: 40px;
+    background: url('/iconButtonBackRound.gif') no-repeat center center;
+    background-size: cover;
+    image-rendering: pixelated;
+  
+    mat-icon, img {
+      width: 24px;
+      height: 24px;
+      color: white;
+      image-rendering: pixelated;
+    }
+  
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+  
+  .minimap-overlay {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 160px;
+    height: 160px;
+    pointer-events: none;
+    z-index: 992;
+    overflow:visible;
+
+  }
+  
+  .button-grid {
+    margin-left:10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+  }
+  
+  .icon-button {
+    width: 38px;
+    height: 46px;
+    padding: 0;
+    border: none;
+    background: url('/iconButtonBack.gif') no-repeat center center;
+    background-size: cover;
+    image-rendering: pixelated;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  
+    &:hover {
+      filter: brightness(1.8);
+      cursor: pointer;
+    }
+  
+    .icon-foreground {
+      width: 60%;
+      height: auto;
+      pointer-events: none;
+      image-rendering: pixelated;
+    }
+  
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(1px, 1px, 1px, 1px);
+    }
+  }
+  
+  .hud-section {
+    flex-grow: 1;
+    background: #4e342e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('/darkParchmentTile.gif');
+    background-repeat: repeat;
+  }
+  

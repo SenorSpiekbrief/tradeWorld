@@ -1,0 +1,39 @@
+<h2>Fleet Details</h2>
+
+<div class="fleet-detail">
+  <div class="fleet-logo">
+    <img [src]="fleet.logo" alt="Fleet Emblem">
+  </div>
+  
+  <div class="fleet-info">
+    <h3>{{ fleet.name }}</h3>
+    <p><strong>Commander:</strong> {{ fleet.commander }}</p>
+    <p><strong>Ships:</strong> {{ fleet.ships.length }}</p>
+    <p><strong>Home Port:</strong> {{ fleet.homePort }}</p>
+    <p><strong>Status:</strong> {{ fleet.status }}</p>
+  </div>
+
+  <div class="fleet-operations">
+    <h4>Ship Manifest</h4>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Cargo</th>
+        <th>Condition</th>
+      </tr>
+      <tr *ngFor="let ship of fleet.ships">
+        <td>{{ ship.name }}</td>
+        <td>{{ ship.type }}</td>
+        <td>{{ ship.cargo }}</td>
+        <td>{{ ship.condition }}%</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="detail-actions">
+    <button mat-button color="primary" (click)="editFleet()">Edit</button>
+    <button mat-button color="warn" (click)="disbandFleet()">Disband</button>
+    <button mat-button color="accent" (click)="close()">Close</button>
+  </div>
+</div>

@@ -1,0 +1,16 @@
+.parchment-frame {
+    background: url('/assets/parchment-texture.jpg') no-repeat center center;
+    background-size: cover;
+    padding: 2rem;
+    border: 10px solid #8B4513;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    font-family: 'MedievalSharp', cursive;
+  }
+  
+  .wooden-border {
+    border: 12px groove #654321;
+    padding: 1rem;
+    background-color: rgba(255, 255, 240, 0.85);
+  }
+  

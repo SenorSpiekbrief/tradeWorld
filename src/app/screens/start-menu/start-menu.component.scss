@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Uncial+Antiqua&display=swap');
+
+.menu-container {
+  background: url('/parchment.jpg') no-repeat center center;
+  background-size: cover;
+  text-align: center;
+  padding: 40px;
+  border: 8px solid #8B4513;
+  width: 400px;
+  margin: 50px auto;
+  border-radius: 10px;
+}
+
+.title {
+  font-family: 'Uncial Antiqua', cursive;
+  font-size: 32px;
+  color: #5b2c04;
+}
+
+.menu {
+  list-style-type: none;
+  padding: 0;
+
+  li {
+    font-family: 'Uncial Antiqua', cursive;
+    font-size: 24px;
+    color: #4a2a09;
+    cursor: pointer;
+    padding: 10px;
+    border: 2px solid transparent;
+    transition: 0.3s;
+    
+    &:hover {
+      border-color: #d4af37;
+      color: #d4af37;
+      background: rgba(0, 0, 0, 0.2);
+    }
+  }
+}

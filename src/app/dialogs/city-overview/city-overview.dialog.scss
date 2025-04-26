@@ -1,0 +1,46 @@
+.medieval-table {
+    background-color: #f4e1c1;
+    border: 2px solid #6b4226;
+    color: #4a321a;
+    font-family: 'MedievalSharp', cursive;
+  }
+  
+  .medieval-table th {
+    background-color: #8b5a2b;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px;
+  }
+  
+  .medieval-table td {
+    border-bottom: 1px solid #6b4226;
+    padding: 8px;
+  }
+  
+  .medieval-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+  }
+  
+  button {
+    font-family: 'MedievalSharp', cursive;
+    border-radius: 5px;
+    padding: 8px 12px;
+  }
+  
+  button[color='primary'] {
+    background-color: #6b4226;
+    color: white;
+  }
+  
+  button[color='accent'] {
+    background-color: #8b5a2b;
+    color: white;
+  }
+  
+  button[color='warn'] {
+    background-color: #a83232;
+    color: white;
+  }
+  

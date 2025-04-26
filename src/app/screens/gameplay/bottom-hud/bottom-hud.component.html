@@ -1,0 +1,49 @@
+
+<div class="hud-wrapper">
+    <div class="hud-border"></div>
+<div class="bottom-hud">
+
+    <div class="minimap">
+        <div class="minimap-canvas">
+          <p>Minimap</p>
+          <img class="minimap-overlay" src="/emptyMinimapCanvas.gif" alt="overlay" />
+        </div>
+
+        
+        <app-map-controls></app-map-controls>
+        <!-- <div class="map-controls">
+          <button mat-icon-button matTooltip="Zoom In" class="map-control-btn">
+            <mat-icon fontIcon="zoom_in"></mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Zoom Out" class="map-control-btn">
+            <mat-icon fontIcon="zoom_out"></mat-icon>
+          </button>
+          <button mat-icon-button matTooltip="Recenter" class="map-control-btn">
+            <mat-icon fontIcon="my_location"></mat-icon>
+          </button>
+        </div> -->
+      </div>
+      
+  
+    <!-- Button Grid -->
+    <div class="button-grid">
+        <button mat-icon-button class="icon-button" matTooltip="Company Overview"(click)="openDialog(CompanyOverviewDialog)">Company Overview</button>
+        <button mat-icon-button class="icon-button" matTooltip="Current Company"(click)="openDialog(CompanyDetailDialog)">Current Company</button>
+        <button mat-icon-button class="icon-button" matTooltip="Player Overview" (click)="openDialog(PlayerOverviewDialog)">Player Overview</button>
+        <button mat-icon-button class="icon-button" matTooltip="Inventory" (click)="openDialog(InventoryDialog)">Inventory</button>
+        <button mat-icon-button class="icon-button" matTooltip="Construction" (click)="openDialog(ConstructionDialog)">Construction</button>
+        <button mat-icon-button class="icon-button" matTooltip="City Overview" (click)="openDialog(CityOverviewDialog)">City Overview</button>
+        <button mat-icon-button class="icon-button" matTooltip="Fleet Overview" (click)="openDialog(FleetOverviewDialog)">Fleet Overview</button>
+        <button mat-icon-button class="icon-button" matTooltip="Manage Fleet" (click)="openDialog(FleetDetailDialog)">Manage Fleet</button>
+    </div>
+  
+    <!-- Two equally sized sections -->
+    <div class="hud-section">
+      <p>Section 1</p>
+    </div>
+    <div class="hud-section">
+      <p>Section 2</p>
+    </div>
+  
+  </div>
+</div>

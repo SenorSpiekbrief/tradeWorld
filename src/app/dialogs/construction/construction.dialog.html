@@ -1,0 +1,20 @@
+<h2>Construction</h2>
+
+<mat-form-field appearance="outline">
+  <mat-label>Group by</mat-label>
+  <mat-select [(value)]="groupBy" (selectionChange)="updateStructureList()">
+    <mat-option value="production-horizontal">Production Chain (Horizontal)</mat-option>
+    <mat-option value="production-vertical">Production Chain (Vertical)</mat-option>
+    <mat-option value="techLevel">Tech Level</mat-option>
+    <mat-option value="materials">Required Materials</mat-option>
+    <mat-option value="cost">Cost</mat-option>
+  </mat-select>
+</mat-form-field>
+
+<div class="structure-browser">
+  <app-structure-group *ngIf="structureGroup" [group]="structureGroup"></app-structure-group>
+</div>
+
+<div class="dialog-actions">
+  <button mat-button color="warn" (click)="close()">Cancel</button>
+</div>

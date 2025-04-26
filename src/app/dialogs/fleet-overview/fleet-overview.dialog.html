@@ -1,0 +1,14 @@
+<div class="fleet-overview">
+    <h2>Fleet Overview</h2>
+    <button *ngIf="viewingShips" (click)="backToFleets()">Back</button>
+    <div *ngIf="!viewingShips" class="fleet-grid">
+      <div *ngFor="let fleet of fleets" (click)="selectFleet(fleet)" class="fleet-card">
+        {{ fleet.name }}
+      </div>
+    </div>
+    <div *ngIf="viewingShips" class="ship-grid">
+      <div *ngFor="let ship of selectedFleet?.ships" class="ship-card">
+        {{ ship.name }} ({{ ship.type }})
+      </div>
+    </div>
+  </div>

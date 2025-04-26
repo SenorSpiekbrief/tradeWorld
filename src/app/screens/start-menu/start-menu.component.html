@@ -1,0 +1,9 @@
+<div class="menu-container">
+    <h1 class="title">The Kingdom Awaits</h1>
+    <ul class="menu">
+      <li *ngFor="let item of menuItems" (click)="navigate(item.route)">
+        {{ item.label }}
+      </li>
+    </ul>
+  </div>
+  

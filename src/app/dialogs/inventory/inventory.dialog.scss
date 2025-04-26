@@ -1,0 +1,39 @@
+.inventory-dialog {
+    width: 600px;
+    padding: 20px;
+  
+    .inventory-grid, .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+  
+    .inventory-slot, .equipment-slot, .relation-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      background: #f9f9f9;
+    }
+  
+    .assets-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+  
+    .assets-table th, .assets-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+  
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+  }
+  

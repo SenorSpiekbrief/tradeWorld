@@ -1,0 +1,28 @@
+.player-overview {
+    background-color: #e0e0e0;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    gap: 20px;
+  }
+  
+  .player-avatar img {
+    max-width: 100px;
+    border-radius: 8px;
+  }
+  
+  .player-info {
+    flex: 1;
+  }
+  
+  .player-assets {
+    flex: 1;
+  }
+  
+  .detail-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  

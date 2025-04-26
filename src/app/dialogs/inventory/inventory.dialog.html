@@ -1,0 +1,48 @@
+
+<div class="inventory-dialog">
+    <mat-tab-group [selectedIndex]="tabs.indexOf(selectedTab)" (selectedIndexChange)="selectTab(tabs[$event])">
+      <mat-tab *ngFor="let tab of tabs" [label]="tab">
+        <ng-container *ngIf="tab === 'Inventory'">
+          <div class="inventory-grid">
+            <div *ngFor="let item of inventory" class="inventory-slot">
+              <span>{{ item.icon }}</span>
+              <span>{{ item.name }} (x{{ item.quantity }})</span>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="tab === 'Equipment'">
+          <div class="equipment-grid">
+            <div *ngFor="let slot of equipmentSlots" class="equipment-slot">
+              <span>{{ slot.slot }}</span>
+              <span *ngIf="slot.item">{{ slot.item.icon }} {{ slot.item.name }}</span>
+              <span *ngIf="!slot.item">(Empty)</span>
+            </div>
+          </div>
+        </ng-container>
+        <ng-container *ngIf="tab === 'Assets'">
+          <table class="assets-table">
+            <tr>
+              <th>Name</th>
+              <th>Category</th>
+              <th>Value</th>
+            </tr>
+            <tr *ngFor="let asset of assets">
+              <td>{{ asset.name }}</td>
+              <td>{{ asset.category }}</td>
+              <td>{{ asset.value | currency }}</td>
+            </tr>
+          </table>
+        </ng-container>
+        <ng-container *ngIf="tab === 'Relations'">
+          <div class="relations-list">
+            <div *ngFor="let relation of relations" class="relation-item">
+              <span>{{ relation.name }} - {{ relation.role }} ({{ relation.status }})</span>
+            </div>
+          </div>
+        </ng-container>
+      </mat-tab>
+    </mat-tab-group>
+    <div class="dialog-actions">
+      <button mat-button (click)="close()">Close</button>
+    </div>
+  </div>

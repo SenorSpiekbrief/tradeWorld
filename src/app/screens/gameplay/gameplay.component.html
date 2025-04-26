@@ -1,0 +1,36 @@
+<div class="game-container">
+  
+    <!-- Top Toolbar -->
+    <div class="top-toolbar">
+      <div class="time-controls">
+        <span>{{ currentTime }}</span>
+        <button mat-button (click)="updateTime(1)">1x</button>
+        <button mat-button (click)="updateTime(5)">5x</button>
+        <button mat-button (click)="updateTime(10)">10x</button>
+      </div>
+      
+      <div class="menu-controls">
+        <mat-icon>account_circle</mat-icon>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item>Account</button>
+          <button mat-menu-item>Settings</button>
+          <button mat-menu-item>Help</button>
+          <button mat-menu-item>Debug</button>
+        </mat-menu>
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+      </div>
+    </div>
+  
+    <!-- Gameplay Content (placeholder) -->
+    <div class="game-world">
+        <app-world-map></app-world-map>
+      <p>Gameplay area...</p>
+    </div>
+  
+    <!-- Bottom HUD -->
+    <app-bottom-hud></app-bottom-hud>
+
+  </div>
+  

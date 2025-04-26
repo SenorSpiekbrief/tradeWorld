@@ -1,0 +1,16 @@
+<div class="group-container">
+    <div class="group-header" (click)="toggleExpand()">
+      <span *ngIf="group.children!.length > 0">📂</span>
+      {{ group.name }}
+    </div>
+    
+    <div class="group-children" *ngIf="expanded">
+      <ng-container *ngFor="let child of group.children">
+        <app-structure-group *ngIf="'children' in child" [group]="child"></app-structure-group>
+        <div *ngIf="child.name && !child.children" class="structure-item" (click)="selectStructure(child)">
+          🏗 {{ child.name }}
+        </div>
+      </ng-container>
+    </div>
+  </div>
+  

@@ -1,0 +1,21 @@
+<div class="dialog-container">
+    <h2>New Game Setup</h2>
+    
+    <mat-tab-group>
+      <mat-tab label="World Settings">
+        <p>Customize your world settings here.</p>
+      </mat-tab>
+      <mat-tab label="Player Options">
+        <p>Select player attributes and start conditions.</p>
+      </mat-tab>
+      <mat-tab label="Market Config">
+        <p>Define starting market conditions.</p>
+      </mat-tab>
+    </mat-tab-group>
+  
+    <div class="dialog-actions">
+      <button mat-button (click)="cancel()" class="cancel">Cancel</button>
+      <button mat-button color="primary" (click)="startGame()" class="start">Start</button>
+    </div>
+  </div>
+  

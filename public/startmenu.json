@@ -1,0 +1,5 @@
+[
+      { "label": "New Game", "route": "/new-game" },
+      { "label": "Load Game", "route": "/load-game" },
+      { "label": "Settings", "route": "/settings" }
+    ]

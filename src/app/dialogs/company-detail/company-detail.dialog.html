@@ -1,0 +1,39 @@
+<h2>Company Details</h2>
+
+<div class="company-detail">
+  <div class="company-logo">
+    <img [src]="company.logo" alt="Company Logo">
+  </div>
+  
+  <div class="company-info">
+    <h3>{{ company.name }}</h3>
+    <p><strong>Industry:</strong> {{ company.industry }}</p>
+    <p><strong>Value:</strong> ${{ company.value | number }}</p>
+    <p><strong>Founded:</strong> {{ company.founded | date }}</p>
+    <p><strong>Owner:</strong> {{ company.ceo }}</p>
+  </div>
+
+  <div class="company-production">
+    <h4>Production Overview</h4>
+    <table>
+      <tr>
+        <th>Construction</th>
+        <th>Production</th>
+        <th>Consumption</th>
+        <th>Store</th>
+      </tr>
+      <tr *ngFor="let item of company.production">
+        <td>{{ item.construction }}</td>
+        <td>{{ item.production }}</td>
+        <td>{{ item.consumption }}</td>
+        <td>{{ item.store }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="detail-actions">
+    <button mat-button color="primary" (click)="editCompany()">Edit</button>
+    <button mat-button color="warn" (click)="deleteCompany()">Delete</button>
+    <button mat-button color="accent" (click)="close()">Close</button>
+  </div>
+</div>
