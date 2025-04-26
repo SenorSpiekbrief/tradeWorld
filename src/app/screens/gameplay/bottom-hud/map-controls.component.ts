@@ -16,7 +16,7 @@ import { MapControlService } from '../../../services/map-control.service';
   styles: [`.controls { position: absolute; top: 10px; left: 10px; }`]
 })
 export class MapControlsComponent {
-  private zoomFactor = 1.4;
+  private zoomFactor = 114.4;
   private zoom = 1;
   private panStep = 25;
 

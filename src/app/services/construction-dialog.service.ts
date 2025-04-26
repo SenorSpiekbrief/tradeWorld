@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { ID } from '../shared/types/ID';
 
 export interface Structure {
+  id:ID,
   name: string;
   category: string;
   techLevel: number;
@@ -21,10 +23,10 @@ export class ConstructionService {
   private selectedStructure: Structure | null = null;
 
   private structures: Structure[] = [
-    { name: 'Bakery', category: 'Food', techLevel: 1, materials: ['Wood', 'Stone'], cost: 500 },
-    { name: 'Blacksmith', category: 'Metalworking', techLevel: 2, materials: ['Iron', 'Coal'], cost: 1000 },
-    { name: 'Lumber Mill', category: 'Wood Processing', techLevel: 1, materials: ['Wood'], cost: 700 },
-    { name: 'Market', category: 'Commerce', techLevel: 1, materials: ['Wood', 'Stone'], cost: 800 }
+    { id:'0', name: 'Bakery', category: 'Food', techLevel: 1, materials: ['Wood', 'Stone'], cost: 500 },
+    { id:'0',name: 'Blacksmith', category: 'Metalworking', techLevel: 2, materials: ['Iron', 'Coal'], cost: 1000 },
+    { id:'0',name: 'Lumber Mill', category: 'Wood Processing', techLevel: 1, materials: ['Wood'], cost: 700 },
+    { id:'0',name: 'Market', category: 'Commerce', techLevel: 1, materials: ['Wood', 'Stone'], cost: 800 }
   ];
 
   getGroupedStructures(groupBy: string): StructureGroup {

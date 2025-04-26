@@ -6,8 +6,8 @@ export class BiomeService {
 
   getBiome(elevation: number, moisture: number, temperature: number): string {
     const isArid = moisture < this.treeMoistureTreshold;
-    const isCold = temperature < 0.1;
-    const isHot = temperature > 0.4;
+    const isCold = temperature < 0.07;
+    const isHot = temperature > 0.42;
 
     // Water & coast
     if (elevation < 0.12) return 'ocean';

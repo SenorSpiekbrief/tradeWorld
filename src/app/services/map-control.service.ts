@@ -34,4 +34,10 @@ export class MapControlService {
   setOffset(x: number, y: number): void {
     this.offsetSubject.next({ x, y });
   }
+
+  setOffsetChunk(x: number, y: number): void {
+    x = ((x*(512/this.zoomSubject.getValue())), y = ((y*512/this.zoomSubject.getValue())));
+    console.log(x,y,' in offset', this.zoomSubject.getValue())
+    this.offsetSubject.next({ x, y });
+  }
 }

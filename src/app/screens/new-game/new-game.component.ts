@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import {MatTabsModule} from '@angular/material/tabs';
+import { FileSystemService } from '../../services/filesystem.service';
 
 @Component({
   selector: 'app-new-game',
@@ -10,7 +11,12 @@ import {MatTabsModule} from '@angular/material/tabs';
   styleUrls: ['./new-game.component.scss']
 })
 export class NewGameComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router,
+        private chunkFileSystemService: FileSystemService
+  ) {}
+  async pickFolder(): Promise<void> {
+    await this.chunkFileSystemService.requestDirectoryAccess();
+  }
 
   startGame(): void {
     this.router.navigate(['/loading']);
