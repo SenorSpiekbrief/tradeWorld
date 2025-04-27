@@ -1,175 +1,264 @@
 import { Injectable } from '@angular/core';
 import { TileData } from '../worldGeneration/world-map.service';
-import { Settlement } from '../../shared/types/Settlement';
-import { Position } from '../../shared/types/Position';
+import { EstateType } from '../../shared/enums/EstateType';
 import { SettlementType } from '../../shared/enums/SettlementType';
-import { Structure } from '../construction-dialog.service';
-import { StructureType } from '../../shared/enums/StructureType';
-
+import { ID } from '../../shared/types/ID';
+import { Settlement } from '../../shared/types/Settlement';
 
 @Injectable({ providedIn: 'root' })
 export class CitySeederService {
   constructor() {}
 
-  seedCoastalSettlements(
+  async seedWorldSettlements(
     chunk: TileData[][],
     globalChunkX: number,
     globalChunkY: number,
     seedRandom: () => number,
-    desiredCount: number = 8
-  ): Settlement[] {
-    const settlements: Settlement[] = [];
-    const candidates: { x: number; y: number; tile: TileData }[] = [];
+    coastalCount: number = 6,
+    inlandCount: number = 4,
+    maxRetries: number = 10
+  ): Promise<Settlement[]> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const coastalCandidates = this.findCoastalCandidates(chunk);
+      console.log(`Attempt ${attempt}: Found ${coastalCandidates.length} coastal candidates.`);
 
+      const coastalSettlements = this.pickCoastalSettlements(coastalCandidates, globalChunkX, globalChunkY, seedRandom, coastalCount);
+      if (coastalSettlements.length < coastalCount) {
+        console.warn(`Not enough coastal settlements. Retry.`);
+        continue;
+      }
+
+      // Add harbor estate if needed
+      for (const settlement of coastalSettlements) {
+        if (!this.isDirectlyTouchingOcean(chunk, settlement.x % 512, settlement.y % 512)) {
+          console.log(`Settlement ${settlement.name} is near water but not touching ocean. Adding Harbor estate.`);
+          settlement.estates.push({
+              estateId: this.generateSimpleID(),
+              type: EstateType.Shipyard,
+              name: '',
+              location: {
+                  x: 0,
+                  y: 0
+              },
+              market: {
+                  sellOrders: [],
+                  buyOrders: [],
+                  auction: []
+              },
+              structures: [],
+              upgrades: []
+          });
+        }
+      }
+
+      // Now find inland candidates based on coastal hubs
+      const inlandSettlements = this.placeInlandSettlements(chunk, coastalSettlements, globalChunkX, globalChunkY, seedRandom, inlandCount);
+
+      const allSettlements = [...coastalSettlements, ...inlandSettlements];
+
+      if (allSettlements.length >= (coastalCount + inlandCount)) {
+        console.log(`World settlements seeded successfully on attempt ${attempt}.`);
+        return allSettlements;
+      } else {
+        console.warn(`Not enough inland settlements. Retrying.`);
+      }
+    }
+
+    throw new Error(`Failed to seed world settlements after ${maxRetries} attempts.`);
+  }
+
+  // ------------------ CORE METHODS ------------------ //
+
+  private findCoastalCandidates(chunk: TileData[][]): { x: number; y: number }[] {
+    const candidates: { x: number; y: number }[] = [];
     const width = chunk[0].length;
     const height = chunk.length;
 
-    // Step 1: Find beach candidates connected to ocean
     for (let y = 1; y < height - 1; y++) {
       for (let x = 1; x < width - 1; x++) {
-        const tile = chunk[y][x];
-        if (tile.biome === 'beach' && this.isConnectedToOcean(chunk, x, y)) {
-          candidates.push({ x, y, tile });
+        if (chunk[y][x].biome === 'beach' && this.isTrueCoast(chunk, x, y)) {
+          candidates.push({ x, y });
         }
       }
     }
 
-    // Step 2: Randomly select placements
-    for (let i = 0; i < desiredCount && candidates.length > 0; i++) {
-      const index = Math.floor(seedRandom() * candidates.length);
+    return candidates;
+  }
+
+  private pickCoastalSettlements(
+    candidates: { x: number; y: number }[],
+    globalChunkX: number,
+    globalChunkY: number,
+    rand: () => number,
+    count: number
+  ): Settlement[] {
+    const settlements: Settlement[] = [];
+
+    for (let i = 0; i < count && candidates.length > 0; i++) {
+      const index = Math.floor(rand() * candidates.length);
       const { x, y } = candidates.splice(index, 1)[0];
 
       const globalX = globalChunkX * 512 + x;
       const globalY = globalChunkY * 512 + y;
 
-      const type = this.pickSettlementType(i, seedRandom);
-      const pop = this.generatePopulation(type, seedRandom);
-
-      const rule = this.generateInitialRule(seedRandom);
-
-      const structures = this.generateInitialStructures(type, seedRandom);
-      const estates = this.generateInitialEstates(type, seedRandom);
-
-      settlements.push({
-        id: this.generateID(globalX, globalY),
-        name: this.generateSettlementName(seedRandom),
-        type,
-        location: { x: globalX, y: globalY } as Position,
-        x: globalX,
-        y: globalY,
-        population: pop,
-        specializations: this.pickSpecializations(seedRandom),
-        estates,
-        structures,
-        market: { offers: [], demands: [] }, // Empty start
-        inventory: { goods: [] }, // Empty start
-        rule
-      });
+      settlements.push(this.createSettlement(globalX, globalY, rand, true));
     }
 
     return settlements;
   }
 
-  private isConnectedToOcean(chunk: TileData[][], startX: number, startY: number): boolean {
-    const visited = new Set<string>();
-    const queue: [number, number][] = [[startX, startY]];
+  private placeInlandSettlements(
+    chunk: TileData[][],
+    coastalSettlements: Settlement[],
+    globalChunkX: number,
+    globalChunkY: number,
+    rand: () => number,
+    inlandCount: number
+  ): Settlement[] {
+    const settlements: Settlement[] = [];
     const width = chunk[0].length;
     const height = chunk.length;
 
-    while (queue.length > 0) {
-      const [x, y] = queue.shift()!;
-      const key = `${x},${y}`;
+    for (let i = 0; i < inlandCount; i++) {
+      const coastalHub = coastalSettlements[Math.floor(rand() * coastalSettlements.length)];
 
-      if (visited.has(key)) continue;
-      visited.add(key);
+      let found = false;
+      for (let attempt = 0; attempt < 100; attempt++) {
+        const angle = rand() * 2 * Math.PI;
+        const distance = 8 + Math.floor(rand() * 16); // between 8 and 24 tiles
+        const dx = Math.round(Math.cos(angle) * distance);
+        const dy = Math.round(Math.sin(angle) * distance);
 
-      const tile = chunk[y]?.[x];
-      if (!tile) continue;
+        const tx = (coastalHub.x % 512) + dx;
+        const ty = (coastalHub.y % 512) + dy;
 
-      if (tile.biome === 'ocean') {
-        return true;
+        if (tx < 0 || ty < 0 || tx >= width || ty >= height) continue;
+
+        const tile = chunk[ty][tx];
+        if (tile.biome !== 'ocean' && tile.biome !== 'water') {
+          const globalX = globalChunkX * 512 + tx;
+          const globalY = globalChunkY * 512 + ty;
+          settlements.push(this.createSettlement(globalX, globalY, rand, false));
+          found = true;
+          break;
+        }
       }
 
-      if (tile.biome !== 'water' && tile.biome !== 'beach') continue;
-
-      for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-        const nx = x + dx;
-        const ny = y + dy;
-        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-          queue.push([nx, ny]);
-        }
+      if (!found) {
+        console.warn(`Could not place inland city ${i}`);
       }
     }
 
-    return false;
+    return settlements;
   }
 
-  private pickSettlementType(index: number, rand: () => number): SettlementType {
-    if (index === 0) return SettlementType.City;
+  private isTrueCoast(chunk: TileData[][], startX: number, startY: number, maxSearchDistance: number = 20): boolean {
+    const visited = new Set<string>();
+    const queue: { x: number; y: number; dist: number }[] = [{ x: startX, y: startY, dist: 0 }];
+    const width = chunk[0].length;
+    const height = chunk.length;
+  
+    while (queue.length > 0) {
+      const { x, y, dist } = queue.shift()!;
+      const key = `${x},${y}`;
+  
+      if (visited.has(key)) continue;
+      visited.add(key);
+  
+      const tile = chunk[y]?.[x];
+      if (!tile) continue;
+  
+      if (tile.biome === 'ocean') {
+        return true; // 🎯 Ocean reached through water path!
+      }
+  
+      if (tile.biome !== 'water' && tile.biome !== 'beach') {
+        continue; // ❌ Hit land
+      }
+  
+      if (dist >= maxSearchDistance) {
+        continue; // ❌ Too far away
+      }
+  
+      // Spread to neighbors
+      for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < width && ny < height) {
+          queue.push({ x: nx, y: ny, dist: dist + 1 });
+        }
+      }
+    }
+  
+    return false; // ❌ No ocean found
+  }
+  
+
+  private isDirectlyTouchingOcean(chunk: TileData[][], x: number, y: number): boolean {
+    return this.isTrueCoast(chunk, x, y);
+  }
+
+  private createSettlement(globalX: number, globalY: number, rand: () => number, coastal: boolean): Settlement {
+    console.log(globalX,globalY,  coastal)
+    return {
+      id: this.generateID(globalX, globalY),
+      name: this.generateSettlementName(rand),
+      type: coastal ? this.pickCoastalSettlementType(rand) : this.pickInlandSettlementType(rand),
+      location: { x: globalX, y: globalY },
+      x: globalX,
+      y: globalY,
+      population: this.generatePopulation(rand),
+      specializations: this.pickSpecializations(rand),
+      estates: [],
+      structures: [],
+      inventory: {
+          equipment: {},
+          assets: {
+              wallet: {
+                  thalers: 0,
+                  gold: 0,
+                  dollars: 0,
+                  guilders: 0,
+                  florins: 0
+              },
+              commodities: undefined,
+              estates: undefined
+          }
+      },
+      market: {
+          sellOrders: [],
+          buyOrders: [],
+          auction: []
+      },
+      rule: this.generateInitialRule(rand),
+    };
+  }
+
+  private pickCoastalSettlementType(rand: () => number): SettlementType {
     const roll = rand();
-    if (roll < 0.2) return SettlementType.Town;
+    if (roll < 0.15) return SettlementType.City;
+    if (roll < 0.5) return SettlementType.Town;
+    return SettlementType.Village;
+  }
+
+  private pickInlandSettlementType(rand: () => number): SettlementType {
+    const roll = rand();
     if (roll < 0.5) return SettlementType.Village;
     return SettlementType.Hamlet;
   }
 
-  private generatePopulation(type: SettlementType, rand: () => number): Population {
-    let total = 50;
-    switch (type) {
-      case SettlementType.Hamlet: total = 50 + Math.floor(rand() * 100); break;
-      case SettlementType.Village: total = 200 + Math.floor(rand() * 400); break;
-      case SettlementType.Town: total = 800 + Math.floor(rand() * 2000); break;
-      case SettlementType.City: total = 4000 + Math.floor(rand() * 8000); break;
-    }
-
-    const children = Math.floor(total * 0.25);
-    const elderly = Math.floor(total * 0.1);
-    const infirm = Math.floor(total * 0.05);
-    const workforce = Math.floor(total * 0.4);
-    const middle = Math.floor(total * 0.15);
-    const upper = Math.floor(total * 0.04);
-    const elite = Math.floor(total * 0.01);
-
-    return { total, workforce, middle, upper, elite, children, elderly, infirm };
-  }
-
-  private generateInitialStructures(type: SettlementType, rand: () => number): Structure[] {
-    const structures: Structure[] = [];
-
-    structures.push({ id: this.generateSimpleID(), type: StructureType.Well });
-    structures.push({ id: this.generateSimpleID(), type: StructureType.Market });
-
-    if (type === SettlementType.Village || type === SettlementType.Town || type === SettlementType.City) {
-      structures.push({ id: this.generateSimpleID(), type: StructureType.Tavern });
-      structures.push({ id: this.generateSimpleID(), type: StructureType.Docks });
-    }
-
-    if (type === SettlementType.City) {
-      structures.push({ id: this.generateSimpleID(), type: StructureType.Harbor });
-      structures.push({ id: this.generateSimpleID(), type: StructureType.TownHall });
-    }
-
-    return structures;
-  }
-
-  private generateInitialEstates(type: SettlementType, rand: () => number): Estate[] {
-    const estates: Estate[] = [];
-
-    estates.push({ id: this.generateSimpleID(), type: EstateType.Residence });
-
-    if (type === SettlementType.Town || type === SettlementType.City) {
-      estates.push({ id: this.generateSimpleID(), type: EstateType.Warehouse });
-    }
-
-    return estates;
-  }
-
-  private generateInitialRule(rand: () => number): Feudal | Hanse {
-    const roll = rand();
-    if (roll < 0.7) {
-      return { leader: this.generateSimpleID(), subjects: [] };
-    } else {
-      return { councilMembers: [this.generateSimpleID()], comittees: [] };
-    }
+  private generatePopulation(rand: () => number): any {
+    const total = 50 + Math.floor(rand() * 1000);
+    return {
+      total,
+      workforce: Math.floor(total * 0.4),
+      middle: Math.floor(total * 0.15),
+      upper: Math.floor(total * 0.04),
+      elite: Math.floor(total * 0.01),
+      children: Math.floor(total * 0.25),
+      elderly: Math.floor(total * 0.1),
+      infirm: Math.floor(total * 0.05),
+    };
   }
 
   private pickSpecializations(rand: () => number): string[] {
@@ -191,6 +280,15 @@ export class CitySeederService {
     const suffixes = ['ton', 'mouth', 'haven', 'stead', 'ville'];
 
     return `${prefixes[Math.floor(rand() * prefixes.length)]}${roots[Math.floor(rand() * roots.length)]}${suffixes[Math.floor(rand() * suffixes.length)]}`;
+  }
+
+  private generateInitialRule(rand: () => number): any {
+    const roll = rand();
+    if (roll < 0.7) {
+      return { leader: this.generateSimpleID(), subjects: [] };
+    } else {
+      return { councilMembers: [this.generateSimpleID()], comittees: [] };
+    }
   }
 
   private generateSimpleID(): ID {

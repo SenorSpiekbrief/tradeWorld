@@ -6,6 +6,8 @@ import { TileData, WorldMapService } from "../../services/worldGeneration/world-
 import { FileSystemService } from "../../services/filesystem.service";
 import { WorldSessionService } from "../../services/world-session.service";
 import { MapControlService } from "../../services/map-control.service";
+import { CitySeederService } from "../../services/worldGeneration/city-seeder.service";
+import { SeedService } from "../../services/worldGeneration/seed.service";
 
 @Component({
     selector: 'app-loading',
@@ -19,11 +21,13 @@ import { MapControlService } from "../../services/map-control.service";
     currentStep = '';
     seed = 'asdf'
     constructor(private router: Router, 
+        private seedService: SeedService,
         private worldDataService: WorldDataService,
         private worldMapService: WorldMapService,
         private chunkFileSystemService: FileSystemService,
         private worldSessionService: WorldSessionService,
-    private mapControlService: MapControlService) {}
+    private mapControlService: MapControlService,
+private citySeederService: CitySeederService) {}
   
     ngOnInit(): void {
       if (!this.chunkFileSystemService.hasDirectory()) {
@@ -74,11 +78,27 @@ import { MapControlService } from "../../services/map-control.service";
       
           console.log(`Chunk (${chunkX},${chunkY}): Grassland ${mildPercent.toFixed(2)}%, Ocean ${oceanPercent.toFixed(2)}%`);
       
-          if (mildPercent >= 20 && oceanPercent >= 20) {
+          if (mildPercent >= 12 && oceanPercent >= 20) {
             console.log(`Selected starting chunk at (${chunkX}, ${chunkY})`);
             this.worldSessionService.setStartingChunk(chunkX, chunkY);
-            this.mapControlService.setOffsetChunk(chunkX,chunkY);
+            this.mapControlService.setOffsetChunk(chunkX,chunkY,2000,1000);
             (window as any).startingChunk = { x: chunkX, y: chunkY };
+            const settlements = await this.citySeederService.seedWorldSettlements(
+                chunk,
+                chunkX,
+                chunkY,
+                this.seedService.getSeededRandom(),
+                40, 12, 5
+              );
+      
+              // Step 4: Save settlements into game state
+              await this.worldDataService.saveGameState(chunkX, chunkY, {
+                settlements,
+                units: []
+              });
+      
+              // Step 5: Also store settlements in session memory if needed
+              this.worldSessionService.setSettlements(settlements);
             return;
           }
       

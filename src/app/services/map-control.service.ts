@@ -35,9 +35,22 @@ export class MapControlService {
     this.offsetSubject.next({ x, y });
   }
 
-  setOffsetChunk(x: number, y: number): void {
-    x = ((x*(512/this.zoomSubject.getValue())), y = ((y*512/this.zoomSubject.getValue())));
-    console.log(x,y,' in offset', this.zoomSubject.getValue())
-    this.offsetSubject.next({ x, y });
+  private readonly tileSizeBase = 8; // base tile size in pixels
+
+  setOffsetChunk(chunkX: number, chunkY: number, canvasWidth: number, canvasHeight: number): void {
+    const zoom = this.zoomSubject.getValue();
+    const tileSize = this.tileSizeBase * zoom;
+  
+    // Calculate pixel position of top-left of chunk
+    const chunkPixelX = chunkX * 512 * tileSize;
+    const chunkPixelY = chunkY * 512 * tileSize;
+  
+    // Center the view: offset = chunk position - half canvas
+    const centerOffsetX = chunkPixelX - canvasWidth / 2 + (512 * tileSize) / 2;
+    const centerOffsetY = chunkPixelY - canvasHeight / 2 + (512 * tileSize) / 2;
+  
+    console.log('Setting offset:', centerOffsetX, centerOffsetY, 'for chunk', chunkX, chunkY, 'at zoom', zoom);
+  
+    this.offsetSubject.next({ x: centerOffsetX, y: centerOffsetY });
   }
 }

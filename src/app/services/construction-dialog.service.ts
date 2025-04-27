@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ID } from '../shared/types/ID';
+import { StructureType } from '../shared/enums/StructureType';
 
 export interface Structure {
   id:ID,
@@ -9,6 +10,7 @@ export interface Structure {
   materials: string[];
   cost: number;
   children?:  (StructureGroup | Structure)[];
+  type?:StructureType
 }
 
 export interface StructureGroup {

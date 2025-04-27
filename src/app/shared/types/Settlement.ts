@@ -23,7 +23,7 @@ export interface Population {
     type: SettlementType;
     location: Position;
     estates: Estate[]; // Array of Estate IDs
-    structures: Structure[]; // Array of Structure IDs
+    structures?: Structure[]; // Array of Structure IDs
     population: Population;
     market: Market;
     inventory: Inventory;

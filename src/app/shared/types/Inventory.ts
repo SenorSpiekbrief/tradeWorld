@@ -1,4 +1,5 @@
 import { Commodity } from "./Commodity";
+import { EquipmentItem } from "./EquipmentItem";
 import { Estate } from "./Estate";
 
 interface Wallet {

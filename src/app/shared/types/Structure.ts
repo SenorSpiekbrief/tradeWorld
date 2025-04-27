@@ -1,4 +1,4 @@
-import { StructureActions } from "../enums/StructureActions";
+import { StructureAction } from "../enums/StructureActions";
 import { StructureType } from "../enums/StructureType";
 import { ID } from "./ID";
 import { Inventory } from "./Inventory";
@@ -11,5 +11,5 @@ export interface Structure {
     type: StructureType;
     location: { settlementId?: string; estateId?: string, position: Position }; 
     inventory: Inventory;
-    actions: StructureActions[];
+    actions: StructureAction[];
   }

@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { TileData } from './worldGeneration/world-map.service';
 import { FileSystemService } from './filesystem.service';
+import { Settlement } from '../shared/types/Settlement';
 interface GameStateData {
-    settlements: SettlementData[];
+    settlements: Settlement[];
     units: UnitData[];
   }
   
