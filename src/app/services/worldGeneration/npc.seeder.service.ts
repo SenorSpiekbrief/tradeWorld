@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Settlement } from '../models/Settlement';
-import { FamilyMember } from '../models/FamilyMember';
-import { Inventory } from '../models/Inventory';
-import { Trait } from '../enums/PersonTrait';
-import { FamilyRole } from '../enums/FamilyRole';
-import { ID } from '../models/ID';
+import { Settlement } from '../../shared/types/Settlement';
+import { FamilyMember } from '../../shared/types/FamilyMember';
+import { FamilyRole } from '../../shared/enums/FamilyRole';
+import { Trait } from '../../shared/enums/PersonTrait';
+import { ID } from '../../shared/types/ID';
+import { Inventory } from '../../shared/types/Inventory';
 
 @Injectable({ providedIn: 'root' })
 export class NpcSeederService {

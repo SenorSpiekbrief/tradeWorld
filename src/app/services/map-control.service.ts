@@ -7,17 +7,36 @@ import { BehaviorSubject } from 'rxjs';
 export class MapControlService {
   // The current zoom level (default 1 means “no zoom”)
   private zoomSubject = new BehaviorSubject<number>(0.4);
+  private previewOffset: { x: number; y: number } | null = null;
   zoom$ = this.zoomSubject.asObservable();
 
   // The current pan offset in pixels
   private offsetSubject = new BehaviorSubject<{ x: number; y: number }>({ x: 0, y: 0 });
   offset$ = this.offsetSubject.asObservable();
-
-  // Multiply the current zoom level by a factor
-  adjustZoom(factor: number): void {
-    const currentZoom = this.zoomSubject.getValue();
-    this.zoomSubject.next(currentZoom * factor);
+  adjustZoom(factor: number, centerX: number = window.innerWidth / 2, centerY: number = window.innerHeight / 2): void {
+    const oldZoom = this.zoomSubject.getValue();
+    const newZoom = oldZoom * factor;
+  
+    const oldTileSize = this.tileSizeBase * oldZoom;
+    const newTileSize = this.tileSizeBase * newZoom;
+  
+    const currentOffset = this.offsetSubject.getValue();
+  
+    // Calculate where in world coordinates (in tiles) the screen center currently points
+    const worldX = (currentOffset.x + centerX) / oldTileSize;
+    const worldY = (currentOffset.y + centerY) / oldTileSize;
+  
+    // New offset needed to keep the same world tile under screen center
+    const newOffsetX = worldX * newTileSize - centerX;
+    const newOffsetY = worldY * newTileSize - centerY;
+  
+    // Apply zoom first
+    this.zoomSubject.next(newZoom);
+  
+    // Then update offset
+    this.offsetSubject.next({ x: newOffsetX, y: newOffsetY });
   }
+  
 
   // Optionally, set an absolute zoom level
   setZoom(zoom: number): void {
@@ -35,7 +54,7 @@ export class MapControlService {
     this.offsetSubject.next({ x, y });
   }
 
-  private readonly tileSizeBase = 8; // base tile size in pixels
+  readonly tileSizeBase = 8; // base tile size in pixels
 
   setOffsetChunk(chunkX: number, chunkY: number, canvasWidth: number, canvasHeight: number): void {
     const zoom = this.zoomSubject.getValue();
@@ -53,4 +72,26 @@ export class MapControlService {
   
     this.offsetSubject.next({ x: centerOffsetX, y: centerOffsetY });
   }
+
+  centerOnCell(x: number, y: number): void {
+    const zoom = this.zoomSubject.getValue();
+    const tileSize = 8 * zoom;
+  
+    const centerOffsetX = (x * tileSize) - window.innerWidth / 2 + (tileSize / 2);
+    const centerOffsetY = (y * tileSize) - (window.innerHeight - 200) / 2 + (tileSize / 2);
+  
+    this.offsetSubject.next({ x: centerOffsetX, y: centerOffsetY });
+  }
+
+previewPan(dx: number, dy: number): void {
+  const current = this.offsetSubject.getValue();
+  this.previewOffset = { x: current.x - dx, y: current.y - dy };
+}
+
+commitPreviewPan(): void {
+  if (this.previewOffset) {
+    this.offsetSubject.next(this.previewOffset);
+    this.previewOffset = null;
+  }
+}
 }

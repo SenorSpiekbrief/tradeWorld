@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, Input } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, Input, HostListener } from '@angular/core';
 import { MapControlService } from '../../../services/map-control.service';
 import { WorldMapService, TileData } from '../../../services/worldGeneration/world-map.service';
 import { RiverService } from '../../../services/worldGeneration/river.service';
@@ -47,7 +47,10 @@ export class WorldMapComponent implements OnInit, AfterViewInit {
   mouseY: number = 0;
   popupX: number = 0;
   popupY: number = 0;
-  
+  private isDragging = false;
+private lastMousePos = { x: 0, y: 0 };
+private ctrlPressed = false;
+
   constructor(
     private router: Router,
     private mapControlService: MapControlService,
@@ -90,6 +93,41 @@ export class WorldMapComponent implements OnInit, AfterViewInit {
     canvasEl.height = window.innerHeight - 200;
     this.drawMap();
   }
+
+  @HostListener('window:keydown', ['$event'])
+handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Control') {
+    this.ctrlPressed = true;
+  }
+}
+
+@HostListener('window:keyup', ['$event'])
+handleKeyUp(event: KeyboardEvent) {
+  if (event.key === 'Control') {
+    this.ctrlPressed = false;
+  }
+}
+@HostListener('mousedown', ['$event'])
+onMouseDown(event: MouseEvent) {
+  if (this.ctrlPressed) {
+    this.isDragging = true;
+    this.lastMousePos = { x: event.clientX, y: event.clientY };
+  }
+}@HostListener('mousemove', ['$event'])
+onMouseMove(event: MouseEvent) {
+    if (this.isDragging) {
+      const dx = event.clientX - this.lastMousePos.x;
+      const dy = event.clientY - this.lastMousePos.y;
+      this.lastMousePos = { x: event.clientX, y: event.clientY };
+      this.mapControlService.previewPan(dx, dy); // Just store delta during drag
+    }
+  }
+  onMouseUp(event: MouseEvent) {
+    if (this.isDragging) {
+      this.isDragging = false;
+      this.mapControlService.commitPreviewPan(); // Only apply and redraw here
+    }
+  }
   async saveVisibleChunk(): Promise<void> {
     const canvas = this.canvas.nativeElement;
     const tileSize = 8 * this.zoom;
@@ -124,7 +162,7 @@ export class WorldMapComponent implements OnInit, AfterViewInit {
   
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-    // 1. Draw the terrain
+    // === 1. Draw terrain tiles ===
     for (let cy = startChunkY; cy <= startChunkY + Math.ceil(rows / 512); cy++) {
       for (let cx = startChunkX; cx <= startChunkX + Math.ceil(cols / 512); cx++) {
         const chunk = await this.worldDataService.loadOrGenerateTerrain(cx, cy, () => {
@@ -154,11 +192,38 @@ export class WorldMapComponent implements OnInit, AfterViewInit {
       }
     }
   
-    // 2. Draw the settlements (overlay on top)
+    // === 2. Draw smooth routes (Bezier curves) ===
+    const routes = this.worldSessionService.getRoutes();
+    if (routes) {
+      for (const route of routes) {
+        if (route.path.length < 2) continue;
+  
+        ctx.beginPath();
+        const first = route.path[0];
+        ctx.moveTo(first.x * tileSize - this.offset.x, first.y * tileSize - this.offset.y);
+  
+        for (let i = 1; i < route.path.length - 1; i += 2) {
+          const p1 = route.path[i];
+          const p2 = route.path[i + 1] || route.path[i]; // if odd length, repeat last
+  
+          const cpX = p1.x * tileSize - this.offset.x;
+          const cpY = p1.y * tileSize - this.offset.y;
+          const endX = p2.x * tileSize - this.offset.x;
+          const endY = p2.y * tileSize - this.offset.y;
+  
+          ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+        }
+  
+        ctx.strokeStyle = route.type === 'sea' ? 'rgba(30,144,255,0.6)' : 'rgba(139,69,19,0.6)';
+        ctx.lineWidth = this.zoom > 0.5 ? 2 : 1;
+        ctx.stroke();
+      }
+    }
+  
+    // === 3. Draw settlements (always visible) ===
     const settlements = this.worldSessionService.getSettlements();
-    console.log(settlements,' are settlements');
     if (settlements) {
-      ctx.fillStyle = '#FF0000'; // 🔴 Bright red (or you could use '#800080' purple)
+      ctx.fillStyle = '#FF00FF'; // Purple cities
   
       for (const settlement of settlements) {
         const screenX = settlement.x * tileSize - this.offset.x;
@@ -168,22 +233,17 @@ export class WorldMapComponent implements OnInit, AfterViewInit {
             screenX > canvas.width || screenY > canvas.height) {
           continue;
         }
-        console.log(settlement.name)
-        // Small dot or square (smaller than tile size)
-        ctx.fillRect(screenX, screenY, tileSize * 2, tileSize * 2);
+  
+        const size = Math.max(3, tileSize * 0.4); // 👈 Enforce minimum size
+  
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
-    if (this.hoveredSettlement) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(this.mouseX + 10, this.mouseY + 10, 150, 60);
-      
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = '12px Arial';
-        ctx.fillText(`Name: ${this.hoveredSettlement.name}`, this.mouseX + 15, this.mouseY + 25);
-        ctx.fillText(`Type: ${this.hoveredSettlement.type}`, this.mouseX + 15, this.mouseY + 40);
-        ctx.fillText(`Pop: ${this.hoveredSettlement.population.total}`, this.mouseX + 15, this.mouseY + 55);
-      }
   }
+  
+  
   
 
   private biomeColors: Record<string, [number, number, number]> = {

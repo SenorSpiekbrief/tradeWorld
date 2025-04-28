@@ -6,8 +6,9 @@ import { TileData, WorldMapService } from "../../services/worldGeneration/world-
 import { FileSystemService } from "../../services/filesystem.service";
 import { WorldSessionService } from "../../services/world-session.service";
 import { MapControlService } from "../../services/map-control.service";
-import { CitySeederService } from "../../services/worldGeneration/city-seeder.service";
 import { SeedService } from "../../services/worldGeneration/seed.service";
+import { NpcSeederService } from "../../services/worldGeneration/npc.seeder.service";
+import { CitySeederService } from "../../services/worldGeneration/cities/city-seeder.service";
 
 @Component({
     selector: 'app-loading',
@@ -27,7 +28,8 @@ import { SeedService } from "../../services/worldGeneration/seed.service";
         private chunkFileSystemService: FileSystemService,
         private worldSessionService: WorldSessionService,
     private mapControlService: MapControlService,
-private citySeederService: CitySeederService) {}
+private citySeederService: CitySeederService,
+private npcSeederService: NpcSeederService) {}
   
     ngOnInit(): void {
       if (!this.chunkFileSystemService.hasDirectory()) {
@@ -83,12 +85,10 @@ private citySeederService: CitySeederService) {}
             this.worldSessionService.setStartingChunk(chunkX, chunkY);
             this.mapControlService.setOffsetChunk(chunkX,chunkY,2000,1000);
             (window as any).startingChunk = { x: chunkX, y: chunkY };
-            const settlements = await this.citySeederService.seedWorldSettlements(
+            const settlements = await this.citySeederService.seedConnectedWorld(
                 chunk,
-                chunkX,
-                chunkY,
                 this.seedService.getSeededRandom(),
-                40, 12, 5
+                chunkX, chunkY,25
               );
       
               // Step 4: Save settlements into game state
@@ -99,6 +99,13 @@ private citySeederService: CitySeederService) {}
       
               // Step 5: Also store settlements in session memory if needed
               this.worldSessionService.setSettlements(settlements);
+
+              for (const settlement of settlements) {
+                const npcs = this.npcSeederService.generateSettlementPopulation(settlement, this.seedService.getSeededRandom());
+                // You can either:
+                // - save npcs in world state
+                // - attach them to the settlement (e.g., settlement.npcs = npcs)
+              }
             return;
           }
       
