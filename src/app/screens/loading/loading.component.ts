@@ -2,8 +2,8 @@ import { WorldDataService } from "../../services/world-data.service";
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
-import { TileData, WorldMapService } from "../../services/worldGeneration/world-map.service";
-import { FileSystemService } from "../../services/filesystem.service";
+import { CellData, WorldMapService } from "../../services/worldGeneration/world-map.service";
+import { FileSystemService } from "../../services/chunk-filesystem.service";
 import { WorldSessionService } from "../../services/world-session.service";
 import { MapControlService } from "../../services/map-control.service";
 import { SeedService } from "../../services/worldGeneration/seed.service";
@@ -33,8 +33,8 @@ private npcSeederService: NpcSeederService) {}
   
     ngOnInit(): void {
       if (!this.chunkFileSystemService.hasDirectory()) {
-        //this.chunkFileSystemService.requestDirectoryAccess();
-        alert('Please select a folder to continue.');
+        this.chunkFileSystemService.requestDirectoryAccess();
+        //alert('Please select a folder to continue.');
         this.router.navigateByUrl('/new-game');
       }
       this.startLoading();
@@ -71,8 +71,11 @@ private npcSeederService: NpcSeederService) {}
         while (tries < maxTries) {
           const chunkX = this.randomInt(minX, maxX);
           const chunkY = this.randomInt(minY, maxY);
-      
-          const chunk = await this.worldDataService.loadOrGenerateTerrain(chunkX, chunkY, () => {
+  
+          const myGenerator = () => this.worldMapService.generateChunk(chunkX, chunkY, 512, 512);
+
+          const chunk = await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, chunkX, chunkY);
+          await this.worldDataService.loadOrGenerateTerrain(chunkX, chunkY, () => {
             return this.worldMapService.generateChunk(chunkX * 512, chunkY * 512, 512, 512);
           });
       
@@ -93,8 +96,11 @@ private npcSeederService: NpcSeederService) {}
       
               // Step 4: Save settlements into game state
               await this.worldDataService.saveGameState(chunkX, chunkY, {
-                settlements,
-                units: []
+                  id: chunkX+"_"+chunkX,
+                  chunk: chunkX+"_"+chunkX,
+                  settlements: settlements,
+                  units: [],
+                  players: []
               });
       
               // Step 5: Also store settlements in session memory if needed
@@ -117,7 +123,7 @@ private npcSeederService: NpcSeederService) {}
       private randomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1)) + min;
       }
-      private analyzeChunkBiomes(chunk: TileData[][]): { mildPercent: number; oceanPercent: number } {
+      private analyzeChunkBiomes(chunk: CellData[][]): { mildPercent: number; oceanPercent: number } {
         let total = 0;
         let mild = 0;
         let ocean = 0;

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import {MatTabsModule} from '@angular/material/tabs';
-import { FileSystemService } from '../../services/filesystem.service';
+import { FileSystemService } from '../../services/chunk-filesystem.service';
 
 @Component({
   selector: 'app-new-game',

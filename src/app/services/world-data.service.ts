@@ -1,57 +1,56 @@
 import { Injectable } from '@angular/core';
-import { TileData } from './worldGeneration/world-map.service';
-import { FileSystemService } from './filesystem.service';
+import { CellData } from './worldGeneration/world-map.service';
+import { FileSystemService } from './chunk-filesystem.service';
 import { Settlement } from '../shared/types/Settlement';
-interface GameStateData {
+import { PlayerState } from '../shared/types/PlayerState';
+import { ID } from '../shared/types/ID';
+import { GameStateFileSystemService } from './game-state-filesystem.service';
+
+export interface GameStateData {
+    id: ID;
+    chunk:ID;
     settlements: Settlement[];
     units: UnitData[];
+    players: PlayerState[];
   }
   
-  interface SettlementData {
-    id: string;
-    x: number;
-    y: number;
-    type: 'city' | 'village' | 'outpost';
-    owner: string;
-    population: number;
-  }
-  
-  interface UnitData {
-    id: string;
+export interface UnitData {
+    id: ID;
     type: 'fleet' | 'convoy' | 'explorer';
     x: number;
     y: number;
-    targetX: number;
-    targetY: number;
-    owner: string;
+    owner: ID;
+    meta:any;
   }
   
 @Injectable({ providedIn: 'root' })
 export class WorldDataService {
-  constructor(private chunkFileSystemService: FileSystemService) {}
+  constructor(private chunkFileSystemService: FileSystemService,
+            private gameStateFileSystemService: GameStateFileSystemService
+  ) {}
 
   // --- TERRAIN (Static Layer) ---
 
   async loadOrGenerateTerrain(
     chunkX: number,
     chunkY: number,
-    generator: () => TileData[][]
-  ): Promise<TileData[][]> {
-    const terrain = await this.chunkFileSystemService.loadOrSaveChunkBinary(generator, chunkX, chunkY, 'maps');
+    generator: () => CellData[][]
+  ): Promise<CellData[][]> {
+    const terrain = await this.chunkFileSystemService.loadOrSaveChunkBinary(generator, chunkX, chunkY);
     return terrain;
   }
 
-  async saveTerrainChunk(chunk: TileData[][], chunkX: number, chunkY: number): Promise<void> {
-    await this.chunkFileSystemService.saveChunkAsBinary(chunk, chunkX, chunkY, 'maps');
+  async saveTerrainChunk(chunk: CellData[][], chunkX: number, chunkY: number): Promise<void> {
+    await this.chunkFileSystemService.saveChunkAsBinary(chunk, chunkX,chunkY);
   }
 
   // --- GAME STATE (Dynamic Layer) ---
 
-  async loadGameState(chunkX: number, chunkY: number): Promise<GameStateData> {
-    return await this.chunkFileSystemService.loadJSON<GameStateData>(chunkX, chunkY, 'state') ?? { settlements: [], units: [] };
+  async loadGameState(chunkX: number, chunkY: number): Promise<GameStateData|undefined> {
+    return await this.gameStateFileSystemService.loadGameState(`${chunkX}_${chunkY}`) //loadJSON<GameStateData>(chunkX, chunkY, 'state') ?? { settlements: [], units: [] };
   }
 
   async saveGameState(chunkX: number, chunkY: number, state: GameStateData): Promise<void> {
-    await this.chunkFileSystemService.saveJSON(state, chunkX, chunkY, 'state');
+    await this.gameStateFileSystemService.saveGameState(`${chunkX}_${chunkY}`,state) // .saveChunkAsJSON(state, chunkX, chunkY, 'state');
   }
 }

@@ -1,8 +1,8 @@
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, Input, HostListener } from '@angular/core';
 import { MapControlService } from '../../../services/map-control.service';
-import { WorldMapService, TileData } from '../../../services/worldGeneration/world-map.service';
+import { WorldMapService, CellData } from '../../../services/worldGeneration/world-map.service';
 import { RiverService } from '../../../services/worldGeneration/river.service';
-import { FileSystemService } from '../../../services/filesystem.service';
+import { FileSystemService } from '../../../services/chunk-filesystem.service';
 import { Router } from '@angular/router';
 import { WorldSessionService } from '../../../services/world-session.service';
 import { WorldDataService } from '../../../services/world-data.service';
@@ -137,20 +137,23 @@ onMouseMove(event: MouseEvent) {
     const startX = Math.floor(this.offset.x / tileSize);
     const startY = Math.floor(this.offset.y / tileSize);
   
-    const chunk = this.worldMapService.generateChunk(startX, startY, cols, rows);
+    //const chunk = this.worldMapService.generateChunk(startX, startY, cols, rows);
     //this.riverService.generateRivers(chunk, startX, startY, cols, rows);
   
-    await this.chunkFileSystemService.saveChunkAsPNG(chunk, 'elevation', startX, startY);
-    await this.chunkFileSystemService.saveChunkAsPNG(chunk, 'biome', startX, startY);
-    await this.chunkFileSystemService.loadOrSaveChunkJSON(this.worldMapService.generateChunk, startX, startY);
+    const myGenerator = () => this.worldMapService.generateChunk(startX, startY, cols, rows);
+
+    await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, startX, startY);
   }
 
   private async drawMap(): Promise<void> {
+    const tileSize = this.tileSizeBase * this.zoom;
+    const startX = Math.floor(this.offset.x / tileSize);
+    const startY = Math.floor(this.offset.y / tileSize);
+    const myGenerator = () => this.worldMapService.generateChunk(startX, startY, cols, rows);
     const canvas = this.canvas.nativeElement;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
   
-    const tileSize = this.tileSizeBase * this.zoom;
     const cols = Math.ceil(canvas.width / tileSize);
     const rows = Math.ceil(canvas.height / tileSize);
   
@@ -165,12 +168,10 @@ onMouseMove(event: MouseEvent) {
     // === 1. Draw terrain tiles ===
     for (let cy = startChunkY; cy <= startChunkY + Math.ceil(rows / 512); cy++) {
       for (let cx = startChunkX; cx <= startChunkX + Math.ceil(cols / 512); cx++) {
-        const chunk = await this.worldDataService.loadOrGenerateTerrain(cx, cy, () => {
-          return this.worldMapService.generateChunk(cx * 512, cy * 512, 512, 512);
-        });
+        const chunk = await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, cx, cy);
   
-        for (let y = 0; y < 512; y++) {
-          for (let x = 0; x < 512; x++) {
+        for (let y = 0; y < chunk.length-1; y++) {
+          for (let x = 0; x < chunk[y].length-1; x++) {
             const tile = chunk[y][x];
             if (!tile) continue;
   
@@ -263,7 +264,7 @@ onMouseMove(event: MouseEvent) {
     ocean: [0, 0, 128]                   // Deep navy blue
   };
 
-  private getTileColor(tile: TileData): string {
+  private getTileColor(tile: CellData): string {
     const baseColor = this.biomeColors[tile.biome];
     if (baseColor) {
       const [r, g, b] = baseColor;

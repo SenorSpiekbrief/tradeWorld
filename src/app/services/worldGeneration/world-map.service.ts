@@ -4,12 +4,38 @@ import { ElevationService } from "./elevation.service";
 import { ClimateService } from "./climate.service";
 import { BiomeService } from "./biome.service";
 import { LandmarkService } from "./landmark.service";
+import { Inventory } from "../../shared/types/Inventory";
+import { ID } from "../../shared/types/ID";
 
-export interface TileData {
+
+  /** CELL = 512 × 512 tiles */
+  export interface CellData {
+    id?: ID;
     elevation: number;
     moisture: number;
     temperature: number;
     biome: string;
+  
+    tiles?: Tile[][][]; // [layer][tileY][tileX]
+  
+    features?: CellFeature[]; // dynamic feature definitions
+  }
+  export interface CellFeature {
+    type: string; // 'road', 'river', 'rail'
+    connections: Direction[]; // simplified
+    data?: Record<string, any>; // optional metadata
+  }
+  export type Direction = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
+  export interface Tile {
+    sprite:string;
+    inventory?:Inventory; //for chests
+    linkedTileData?:Tile; //for doors
+  }
+
+  /** CHUNK = 512 × 512 cells */
+  export interface ChunkData {
+    cells: CellData[][];
+    isSaved: boolean;               // for save-on-exit
   }
   
   @Injectable({ providedIn: 'root' })
@@ -26,7 +52,7 @@ export interface TileData {
       this.seed.setSeed(seed);
     }
   
-    generateChunk(xStart: number, yStart: number, width: number, height: number): TileData[][] {
+    generateChunk(xStart: number, yStart: number, width: number, height: number): CellData[][] {
         const elevationMap: number[][] = [];
       
         for (let y = 0; y < height; y++) {
@@ -43,9 +69,9 @@ export interface TileData {
         this.landmarkService.applyElevationLandmarks(elevationMap, xStart, yStart);
       
         // Convert elevation map to tile data with climate and biome
-        const chunk: TileData[][] = [];
+        const chunk: CellData[][] = [];
         for (let y = 0; y < height; y++) {
-          const row: TileData[] = [];
+          const row: CellData[] = [];
           for (let x = 0; x < width; x++) {
             const wx = xStart + x;
             const wy = yStart + y;

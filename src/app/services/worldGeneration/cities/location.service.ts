@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TileData } from '../world-map.service';
+import { CellData } from '../world-map.service';
 import { Settlement } from '../../../shared/types/Settlement';
 import { WorldTileService } from '../../world-tile.service';
 
@@ -7,7 +7,7 @@ import { WorldTileService } from '../../world-tile.service';
 export class LocationService {
   constructor(private worldTileService: WorldTileService) {}
 
-  findCoastalLocations(chunk: TileData[][], seedRandom: () => number, desiredCount: number = 6): { x: number; y: number }[] {
+  findCoastalLocations(chunk: CellData[][], seedRandom: () => number, desiredCount: number = 6): { x: number; y: number }[] {
     const candidates: { x: number; y: number }[] = [];
 
     const width = chunk[0].length;
@@ -35,7 +35,7 @@ export class LocationService {
   }
 
   async findSeaExpansionRoute(
-    chunk: TileData[][],
+    chunk: CellData[][],
     from: Settlement,
     seedRandom: () => number
   ): Promise<{ path: { x: number; y: number }[], destination: { x: number; y: number } } | null> {
@@ -110,7 +110,7 @@ export class LocationService {
   }
   
   findExpansionLocation(
-    chunk: TileData[][],
+    chunk: CellData[][],
     from: Settlement,
     type: 'land' | 'sea',
     seedRandom: () => number
@@ -165,7 +165,7 @@ export class LocationService {
   
   
   findInlandLocations(
-    chunk: TileData[][],
+    chunk: CellData[][],
     seedRandom: () => number,
     desiredCount: number,
     coastalSettlements: { x: number; y: number }[]
@@ -198,7 +198,7 @@ export class LocationService {
     return picked;
   }
 
-  private isCoastal(chunk: TileData[][], x: number, y: number): boolean {
+  private isCoastal(chunk: CellData[][], x: number, y: number): boolean {
     const tile = chunk[y][x];
     if (tile.biome !== 'beach') return false;
 

@@ -1,6 +1,6 @@
 // consistent-river.service.ts
 import { Injectable } from "@angular/core";
-import { TileData } from "../worldGeneration/world-map.service";
+import { CellData } from "../worldGeneration/world-map.service";
 import { SeedService } from "./seed.service";
 
 @Injectable({ providedIn: 'root' })
@@ -10,7 +10,7 @@ export class RiverService {
   constructor(private seedService: SeedService) {}
 
   generateRivers(
-    chunk: TileData[][],
+    chunk: CellData[][],
     xStart: number,
     yStart: number,
     chunkWidth: number,
@@ -31,7 +31,7 @@ export class RiverService {
     }
   }
 
-  private findCoastalCandidates(chunk: TileData[][]): [number, number][] {
+  private findCoastalCandidates(chunk: CellData[][]): [number, number][] {
     const points: [number, number][] = [];
     for (let y = 1; y < chunk.length - 1; y++) {
       for (let x = 1; x < chunk[0].length - 1; x++) {
@@ -65,7 +65,7 @@ export class RiverService {
     return accepted;
   }
 
-  private traceUphillRiver(sx: number, sy: number, chunk: TileData[][]): [number, number][] {
+  private traceUphillRiver(sx: number, sy: number, chunk: CellData[][]): [number, number][] {
     const path: [number, number][] = [[sx, sy]];
     let x = sx;
     let y = sy;
@@ -97,7 +97,7 @@ export class RiverService {
     return path;
   }
 
-  private isLocalMax(x: number, y: number, chunk: TileData[][]): boolean {
+  private isLocalMax(x: number, y: number, chunk: CellData[][]): boolean {
     const current = chunk[y][x].elevation;
     for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
       const nx = x + dx;
@@ -108,7 +108,7 @@ export class RiverService {
     return true;
   }
 
-  private carveRiver(chunk: TileData[][], path: [number, number][]): void {
+  private carveRiver(chunk: CellData[][], path: [number, number][]): void {
     for (let i = 0; i < path.length - 4; i++) {
       const [x, y] = path[i];
       const tile = chunk[y][x];

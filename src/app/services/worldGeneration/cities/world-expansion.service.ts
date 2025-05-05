@@ -3,7 +3,7 @@ import { Settlement } from '../../../shared/types/Settlement';
 import { WorldTileService } from '../../world-tile.service';
 import { CityGeneratorService } from './city-generator.service';
 import { RouteGeneratorService } from './route-generator.service';
-import { TileData } from '../world-map.service';
+import { CellData } from '../world-map.service';
 import { Route } from '../../../shared/types/Route';
 import { WorldSessionService } from '../../world-session.service';
 

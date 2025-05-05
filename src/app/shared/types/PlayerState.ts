@@ -5,7 +5,7 @@ import { ID } from "./ID";
 import { Inventory } from "./Inventory";
 
 export interface PlayerState {
-    playerId: ID;
+    id: ID;
     name:string;
     lastHash: string;
     events: GameEvent[];

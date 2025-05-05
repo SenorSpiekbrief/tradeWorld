@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Settlement } from "../../../shared/types/Settlement";
 import { WorldSessionService } from "../../world-session.service";
-import { TileData } from "../world-map.service";
+import { CellData } from "../world-map.service";
 import { WorldExpansionService } from "./world-expansion.service";
 import { LocationService } from "./location.service";
 import { CityGeneratorService } from "./city-generator.service";
@@ -17,7 +17,7 @@ export class CitySeederService {
   ) {}
 
   async seedConnectedWorld(
-    chunk: TileData[][],
+    chunk: CellData[][],
     seedRandom: () => number,
     chunkX: number,
     chunkY: number,

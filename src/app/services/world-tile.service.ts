@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
-import { TileData, WorldMapService } from './worldGeneration/world-map.service';
+import { CellData, WorldMapService } from './worldGeneration/world-map.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorldTileService {
   private chunkSize = 512;
-  private chunkMap = new Map<string, TileData[][]>();
+  private chunkMap = new Map<string, CellData[][]>();
 
   constructor(private worldMapService: WorldMapService) {}
 
@@ -13,7 +13,7 @@ export class WorldTileService {
     return `${chunkX}:${chunkY}`;
   }
 
-  async getTile(globalX: number, globalY: number): Promise<TileData | null> {
+  async getTile(globalX: number, globalY: number): Promise<CellData | null> {
     const chunkX = Math.floor(globalX / this.chunkSize);
     const chunkY = Math.floor(globalY / this.chunkSize);
 
@@ -28,7 +28,7 @@ export class WorldTileService {
     return null;
   }
 
-  async loadOrGenerateChunk(chunkX: number, chunkY: number): Promise<TileData[][]> {
+  async loadOrGenerateChunk(chunkX: number, chunkY: number): Promise<CellData[][]> {
     const key = this.getChunkKey(chunkX, chunkY);
 
     if (this.chunkMap.has(key)) {
