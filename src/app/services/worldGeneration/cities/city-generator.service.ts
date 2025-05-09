@@ -173,6 +173,8 @@ export class CityGeneratorService {
   }
 
   private generateSettlementName(rand: () => number): string {
+
+    //TODO: nameServiceDI
     const roots = ['Port', 'Lake', 'Stone', 'Bay', 'Shore', 'Cliff', 'North', 'South', 'East', 'West'];
     const suffixes = ['ton', 'ville', 'stead', 'burg', 'mouth', 'ford', 'haven', 'holm'];
     return `${roots[Math.floor(rand() * roots.length)]}${suffixes[Math.floor(rand() * suffixes.length)]}`;

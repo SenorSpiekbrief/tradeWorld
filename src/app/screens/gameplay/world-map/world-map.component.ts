@@ -159,13 +159,14 @@ onMouseMove(event: MouseEvent) {
   
     const startChunkX = Math.floor(startTileX / 512);
     const startChunkY = Math.floor(startTileY / 512);
-    const myGenerator = () => this.worldMapService.generateChunk(startChunkX, startChunkY, cols, rows);
+    let myGenerator =null;
   
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   
     // === 1. Draw terrain tiles ===
     for (let cy = startChunkY; cy <= startChunkY + Math.ceil(rows / 512); cy++) {
       for (let cx = startChunkX; cx <= startChunkX + Math.ceil(cols / 512); cx++) {
+        myGenerator = () => this.worldMapService.generateChunk(cx * 512, cy * 512, 512, 512);
         const chunk = await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, cx, cy);
   
         for (let y = 0; y < chunk.length-1; y++) {
