@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-world-map',
   standalone:true,
   imports:[CommonModule],
-  template: `<button (click)="saveVisibleChunk()">Save Current Chunk</button><div ><canvas #mapCanvas></canvas></div><div *ngIf="hoveredSettlement" 
+  template: `<div ><canvas #mapCanvas></canvas></div><div *ngIf="hoveredSettlement" 
      class="settlement-popup" 
      [style.left.px]="popupX" 
      [style.top.px]="popupY">
@@ -128,28 +128,25 @@ onMouseMove(event: MouseEvent) {
       this.mapControlService.commitPreviewPan(); // Only apply and redraw here
     }
   }
-  async saveVisibleChunk(): Promise<void> {
-    const canvas = this.canvas.nativeElement;
-    const tileSize = 8 * this.zoom;
-    const cols = Math.ceil(canvas.width / tileSize);
-    const rows = Math.ceil(canvas.height / tileSize);
+//   async saveVisibleChunk(): Promise<void> {
+//     const canvas = this.canvas.nativeElement;
+//     const tileSize = 8 * this.zoom;
+//     const cols = Math.ceil(canvas.width / tileSize);
+//     const rows = Math.ceil(canvas.height / tileSize);
   
-    const startX = Math.floor(this.offset.x / tileSize);
-    const startY = Math.floor(this.offset.y / tileSize);
+//     const startX = Math.floor(this.offset.x / tileSize);
+//     const startY = Math.floor(this.offset.y / tileSize);
   
-    //const chunk = this.worldMapService.generateChunk(startX, startY, cols, rows);
-    //this.riverService.generateRivers(chunk, startX, startY, cols, rows);
+//     //const chunk = this.worldMapService.generateChunk(startX, startY, cols, rows);
+//     //this.riverService.generateRivers(chunk, startX, startY, cols, rows);
   
-    const myGenerator = () => this.worldMapService.generateChunk(startX, startY, cols, rows);
+//     const myGenerator = () => this.worldMapService.generateChunk(startX, startY, cols, rows);
 
-    await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, startX, startY);
-  }
+//     await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, startX, startY);
+//   }
 
   private async drawMap(): Promise<void> {
     const tileSize = this.tileSizeBase * this.zoom;
-    const startX = Math.floor(this.offset.x / tileSize);
-    const startY = Math.floor(this.offset.y / tileSize);
-    const myGenerator = () => this.worldMapService.generateChunk(startX, startY, cols, rows);
     const canvas = this.canvas.nativeElement;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -162,6 +159,7 @@ onMouseMove(event: MouseEvent) {
   
     const startChunkX = Math.floor(startTileX / 512);
     const startChunkY = Math.floor(startTileY / 512);
+    const myGenerator = () => this.worldMapService.generateChunk(startChunkX, startChunkY, cols, rows);
   
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   

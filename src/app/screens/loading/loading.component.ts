@@ -72,12 +72,12 @@ private npcSeederService: NpcSeederService) {}
           const chunkX = this.randomInt(minX, maxX);
           const chunkY = this.randomInt(minY, maxY);
   
-          const myGenerator = () => this.worldMapService.generateChunk(chunkX, chunkY, 512, 512);
+          const myGenerator = () => this.worldMapService.generateChunk(chunkX * 512, chunkY * 512, 512, 512);;
 
           const chunk = await this.chunkFileSystemService.loadOrSaveChunkBinary(myGenerator, chunkX, chunkY);
-          await this.worldDataService.loadOrGenerateTerrain(chunkX, chunkY, () => {
-            return this.worldMapService.generateChunk(chunkX * 512, chunkY * 512, 512, 512);
-          });
+        //   await this.worldDataService.loadOrGenerateTerrain(chunkX, chunkY, () => {
+        //     return this.worldMapService.generateChunk(chunkX * 512, chunkY * 512, 512, 512);
+        //   });
       
           const { mildPercent, oceanPercent } = this.analyzeChunkBiomes(chunk);
       
