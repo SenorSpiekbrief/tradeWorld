@@ -9,6 +9,7 @@ import { MapControlService } from "../../services/map-control.service";
 import { SeedService } from "../../services/worldGeneration/seed.service";
 import { NpcSeederService } from "../../services/worldGeneration/npc.seeder.service";
 import { CitySeederService } from "../../services/worldGeneration/cities/city-seeder.service";
+import { CityEstateSeederService } from "../../services/worldGeneration/cities/city-estate-seeder.service";
 
 @Component({
     selector: 'app-loading',
@@ -29,6 +30,7 @@ import { CitySeederService } from "../../services/worldGeneration/cities/city-se
         private worldSessionService: WorldSessionService,
     private mapControlService: MapControlService,
 private citySeederService: CitySeederService,
+private cityEstateSeederService:CityEstateSeederService,
 private npcSeederService: NpcSeederService) {}
   
     ngOnInit(): void {
@@ -44,6 +46,10 @@ private npcSeederService: NpcSeederService) {}
     async startLoading(): Promise<void> {
       const loadingSteps = [
         { label: 'Initializing World...', action: () => this.initializeWorld() },
+        { label: 'Seeding settlements...', action: () => this.seedSettlements() },
+        { label: 'Seeding estates...', action: () => this.seedEstates() },
+        { label: 'Seeding npcs...', action: () => this.seedNpcs() },
+        { label: 'Storing initial state...', action: () => this.storeInitialState() },
         { label: 'Generating Player...', action: () => this.setupPlayer() },
         { label: 'Setting Up Market...', action: () => this.setupMarket() },
         { label: 'Finalizing Setup...', action: () => Promise.resolve() }
@@ -57,6 +63,14 @@ private npcSeederService: NpcSeederService) {}
       }
   
       this.router.navigate(['/gameplay']);
+    }
+    storeInitialState() {
+    }
+    seedNpcs() {
+    }
+    seedEstates() {
+    }
+    seedSettlements() {
     }
   
     private async initializeWorld(): Promise<void> {
@@ -93,12 +107,19 @@ private npcSeederService: NpcSeederService) {}
                 this.seedService.getSeededRandom(),
                 chunkX, chunkY,25
               );
-      
+            
+              for (const settlement of settlements) {
+                settlement.estates = this.cityEstateSeederService.seedEstatesAroundSettlement(settlement,chunk,this.seedService.getSeededRandom());
+                settlement.npcs = this.npcSeederService.generateSettlementPopulation(settlement, this.seedService.getSeededRandom());
+                // You can either:
+                // - save npcs in world state
+                // - attach them to the settlement (e.g., settlement.npcs = npcs)
+              }
               // Step 4: Save settlements into game state
               await this.worldDataService.saveGameState(chunkX, chunkY, {
                   id: chunkX+"_"+chunkX,
                   chunk: chunkX+"_"+chunkX,
-                  settlements: settlements,
+                  settlements,
                   units: [],
                   players: []
               });
@@ -106,12 +127,6 @@ private npcSeederService: NpcSeederService) {}
               // Step 5: Also store settlements in session memory if needed
               this.worldSessionService.setSettlements(settlements);
 
-              for (const settlement of settlements) {
-                const npcs = this.npcSeederService.generateSettlementPopulation(settlement, this.seedService.getSeededRandom());
-                // You can either:
-                // - save npcs in world state
-                // - attach them to the settlement (e.g., settlement.npcs = npcs)
-              }
             return;
           }
       

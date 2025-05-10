@@ -1,5 +1,6 @@
 import { SettlementType } from "../enums/SettlementType";
 import { Estate } from "./Estate";
+import { FamilyMember } from "./FamilyMember";
 import { ID } from "./ID";
 import { Inventory } from "./Inventory";
 import { Market } from "./Market";
@@ -25,6 +26,7 @@ export interface Population {
     estates: Estate[]; // Array of Estate IDs
     structures?: Structure[]; // Array of Structure IDs
     population: Population;
+    npcs?: FamilyMember[];
     market: Market;
     inventory: Inventory;
     x: number;

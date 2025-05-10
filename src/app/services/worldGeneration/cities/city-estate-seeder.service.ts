@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { TileData } from '../world-map.service';
+import { CellData } from '../world-map.service';
 import { Settlement } from '../../../shared/types/Settlement';
 import { StructureType } from '../../../shared/enums/StructureType';
 import { EstateType } from '../../../shared/enums/EstateType';
 import { ID } from '../../../shared/types/ID';
+import { Estate } from '../../../shared/types/Estate';
 
 @Injectable({ providedIn: 'root' })
 export class CityEstateSeederService {
@@ -11,20 +12,21 @@ export class CityEstateSeederService {
 
   seedEstatesAroundSettlement(
     settlement: Settlement,
-    chunk: TileData[][],
+    chunk: CellData[][],
     seedRandom: () => number
-  ): void {
+  ): Estate[] {
     const estateCount = this.determineEstateCount(settlement, seedRandom);
+    const result = [];
 
     const candidates: { x: number; y: number; biome: string }[] = [];
 
-    const scanRadius = 20; // search within 20 tiles radius
+    const scanRadius = 3; 
 
     for (let dy = -scanRadius; dy <= scanRadius; dy++) {
       for (let dx = -scanRadius; dx <= scanRadius; dx++) {
         const tx = settlement.x + dx;
         const ty = settlement.y + dy;
-        const tile = chunk[ty]?.[tx];
+        const tile = chunk[ty%512]?.[tx%512];
         if (tile) {
           candidates.push({ x: tx, y: ty, biome: tile.biome });
         }
@@ -40,15 +42,24 @@ export class CityEstateSeederService {
       const estateType = this.pickEstateTypeBasedOnBiome(candidate.biome, seedRandom);
 
       if (estateType) {
-        settlement.estates.push({
-          id: this.generateSimpleID(),
-          type: estateType,
-          name: `${estateType}_${placed}`,
-          location: { x: candidate.x, y: candidate.y }
+        result.push({
+            id: this.generateSimpleID(),
+            type: estateType,
+            name: `${estateType}_${placed}`,
+            location: { x: candidate.x, y: candidate.y },
+            market: {
+                sellOrders: [],
+                buyOrders: [],
+                auction: []
+            },
+            structures: [],
+            upgrades: []
         });
         placed++;
       }
     }
+    console.log(`CityEstateSeederService: Seeded ${result.length} estates.`);
+    return result;
   }
 
   private determineEstateCount(
@@ -67,22 +78,22 @@ export class CityEstateSeederService {
 
   private pickEstateTypeBasedOnBiome(biome: string, rand: () => number): EstateType | null {
     if (['grassland', 'plains', 'alpine grassland'].includes(biome)) {
-      return rand() < 0.5 ? EstateType.ProductionTier1 : EstateType.ProductionTier2; // Farm estates
+      return rand() < 0.5 ? EstateType.ProductionTier1 : EstateType.ProductionTier2;
     }
     if (['forest', 'woodland', 'taiga'].includes(biome)) {
-      return EstateType.ProductionTier1; // Logging camps
+      return rand() < 0.5 ? EstateType.ProductionTier1 : EstateType.Encampment;
     }
     if (['mountain', 'rock', 'alpine'].includes(biome)) {
-      return EstateType.ProductionTier2; // Mines
+      return rand() < 0.5 ? EstateType.ProductionTier2 : EstateType.Residence;
     }
-    if (['beach', 'water', 'ocean'].includes(biome)) {
-      return EstateType.Shipyard; // Docks, fisheries
+    if (['beach'].includes(biome)) {
+      return rand() < 0.5 ? EstateType.Harbour : EstateType.Residence;
     }
     if (['swamp', 'moor'].includes(biome)) {
-      return EstateType.ProductionTier1; // Peat, Salt
+      return rand() < 0.5 ? EstateType.Encampment : EstateType.Infrastructure;
     }
 
-    return null; // Not suitable
+    return null;
   }
 
   private generateSimpleID(): ID {

@@ -7,6 +7,6 @@ export enum EstateType {
     ProductionTier3 = "production_tier_3",
     Infrastructure = "infrastructure",
     PublicService = "public_service",
-    Shipyard = "shipyard",
+    Harbour = "harbour",
     Encampment = "Encampment",
   }

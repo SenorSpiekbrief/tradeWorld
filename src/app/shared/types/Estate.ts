@@ -5,7 +5,7 @@ import { Position } from "./Position";
 import { Structure } from "./Structure";
 
 export interface Estate {
-    estateId: ID;
+    id: ID;
     name: string;
     location: Position;
     type: EstateType;

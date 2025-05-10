@@ -5,12 +5,13 @@ import { ID } from '../../../shared/types/ID';
 import { Inventory } from '../../../shared/types/Inventory';
 import { Position } from '../../../shared/types/Position';
 import { Settlement } from '../../../shared/types/Settlement';
+import { CultureService } from './culture/culture.service';
 
 @Injectable({ providedIn: 'root' })
 export class CityGeneratorService {
   constructor() {}
 
-  createSettlementAt(x: number, y: number, type: 'coastal' | 'inland', seedRandom: () => number): Settlement {
+  createSettlementAt(x: number, y: number, type: 'coastal' | 'inland', seedRandom: () => number,culture?:CultureService): Settlement {
     const settlementType = this.pickSettlementType(type, seedRandom);
     const settlement = this.createBasicSettlement(x, y, settlementType, seedRandom);
 
