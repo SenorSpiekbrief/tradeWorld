@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { SeedService } from "./seed.service";
 
+
 @Injectable({ providedIn: 'root' })
 export class ClimateService {
   constructor(private seedService: SeedService) {}
@@ -10,12 +11,18 @@ export class ClimateService {
 
     const base = noise(x * 0.01, y * 0.01) * 0.5 + 0.5;
 
-    // Add subtle grain (~8-12 cell frequency)
     const grain = (noise(x * 0.08, y * 0.08) - 0.5) * 0.1;
+
+    const elevationFactor = (noise(x * 0.005, y * 0.005) * 0.4 + 0.6);
 
     const windEffect = this.getWindInfluence(x, y);
 
-    return Math.min(1, Math.max(0, (base + grain) * windEffect));
+    let moisture = (base + grain) * elevationFactor * windEffect;
+
+    // Adjust moisture distribution to favor moderate biomes
+    moisture = Math.pow(moisture, 0.8);
+
+    return Math.min(1, Math.max(0, moisture));
   }
 
   getTemperature(x: number, y: number): number {
@@ -25,24 +32,32 @@ export class ClimateService {
     const moisture = this.getMoisture(x, y);
 
     const base =
-      (0.5 * noise(x * 0.0005, y * 0.0005) +
-      0.25 * noise(x * 0.001, y * 0.001) +
-      0.5 * noise(x * 0.002, y * 0.002));
+      (0.4 * noise(x * 0.0005, y * 0.0005) +
+      0.3 * noise(x * 0.001, y * 0.001) +
+      0.3 * noise(x * 0.002, y * 0.002));
 
-    // Subtle grain (~8–12 cells) for temperature variation
-    const grain = (noise(x * 0.07, y * 0.07) - 0.5) * 0.05;
+    const grain = (noise(x * 0.07, y * 0.07) - 0.5) * 0.1;
 
-    const latBanding =
-      1 - Math.abs(Math.sin(y * 0.002 * Math.PI)) *
-      ((windEffect * 1.6) - ((moisture / 2) - 0.2)) + 0.5;
+    const latitudeFactor = Math.cos(y * 0.002 * Math.PI);
 
-    const temp = base * 0.6 + latBanding * 0.4 + grain;
+    const elevationCooling = 1 - (noise(x * 0.005, y * 0.005) * 0.3);
 
-    return Math.min(1, Math.max(0, temp));
+    let temperature = (base + grain) * 0.5 +
+                      (latitudeFactor * 0.4 + windEffect * 0.1) * elevationCooling -
+                      (moisture * 0.05);
+
+    // Slightly compress extremes to boost moderate temperature biomes
+    temperature = 0.2 + temperature * 0.6;
+
+    return Math.min(1, Math.max(0, temperature));
   }
 
   getWindInfluence(x: number, y: number): number {
-    const angle = Math.sin((y / 1000) * Math.PI * 2);
-    return 0.7 + 0.3 * angle; // Simulated banding wind
+    const noise = this.seedService.getNoise();
+
+    const globalWind = Math.sin((y / 1000) * Math.PI * 2);
+    const localVariation = (noise(x * 0.003, y * 0.003) - 0.5) * 0.2;
+
+    return 0.7 + 0.25 * globalWind + localVariation;
   }
 }

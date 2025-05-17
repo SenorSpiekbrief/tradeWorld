@@ -1,5 +1,10 @@
 <div class="loading-screen">
-    <h2>Loading Game...</h2>
-    <mat-progress-bar mode="determinate" [value]="progress"></mat-progress-bar>
+    <div class="parchment">
+      <h2 class="title">🛡️ {{ currentStep }} 🗡️</h2>
+      <div class="progress-bar-container">
+        <mat-progress-bar mode="determinate" [value]="progress" class="medieval-progress"></mat-progress-bar>
+      </div>
+      <p class="loading-message">{{ currentMessage }}</p>
+    </div>
   </div>
   

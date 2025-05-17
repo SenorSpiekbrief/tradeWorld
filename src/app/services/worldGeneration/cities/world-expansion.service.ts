@@ -175,7 +175,7 @@ export class WorldExpansionService {
     seedRandom: () => number
   ): Promise<{ x: number; y: number }[]> {
     const candidates: { x: number; y: number }[] = [];
-    const searchRadius = 80;
+    const searchRadius = 40;
   
     for (let attempts = 0; attempts < 1000 && candidates.length < count; attempts++) {
       const angle = seedRandom() * Math.PI * 2;

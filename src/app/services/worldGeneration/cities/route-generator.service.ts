@@ -59,7 +59,12 @@ export class RouteGeneratorService {
 
         const distance = Math.sqrt((to.x - nx) ** 2 + (to.y - ny) ** 2);
         const randomFactor = seedRandom() * 0.3; // small randomness
-        moveOptions.push({ x: nx, y: ny, score: distance + randomFactor });
+        //const openSea = await this.isNearOceanLocked(to.x,to.y,['ocean'],4) ? 1 : 0;
+        const nearBeach = await this.isNearOceanLocked(to.x,to.y,['beach'],3) ? -8 : 0;
+        //const openOcean = await this.isNearOceanLocked(to.x,to.y,['ocean'],7) ? -2 : 0;
+        //const waterOptimum = await this.isNearOceanLocked(to.x,to.y,['water'],4) ? 1 : 0;
+        const openWater = await this.isNearOceanLocked(to.x,to.y,allowedBiomes,6) ? 3 : 0;
+        moveOptions.push({ x: nx, y: ny, score: distance + randomFactor + openWater+ nearBeach});
       }
 
       if (moveOptions.length === 0) {
@@ -74,5 +79,23 @@ export class RouteGeneratorService {
     }
 
     return path;
+  }
+
+  private async isNearOceanLocked(x: number, y: number, allowedBiomes: string[],amount:number): Promise<boolean> {
+    let waterNeighbors = 0;
+    const neighborCoords = [
+      [1, 0], [0, 1], [-1, 0], [0, -1],
+      [1, 1], [-1, 1], [1, -1], [-1, -1],
+    ];
+  
+    for (const [dx, dy] of neighborCoords) {
+      const tile = await this.worldTileService.getTile(x + dx, y + dy);
+      if (!tile || !allowedBiomes.includes(tile.biome)) {
+        waterNeighbors++;
+      }
+    }
+  
+    // If 6 or more of 8 neighbors are water, we consider it near ocean-locked
+    return waterNeighbors >= amount;
   }
 }
